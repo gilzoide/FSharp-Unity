@@ -7,7 +7,6 @@ using System.Collections;
 /// F# Compiler for the Unity Engine, running external command `fsharpc` or `fsc.exe`
 public class FSCompilerProcess {
 	/// Paths
-	static string outputDir = "Assets/Frameworks";
 	static string unityEngineDllRef = UnityEditor.EditorApplication.applicationContentsPath + "/Managed/UnityEngine.dll";
 	static string unityEditorDllRef = UnityEditor.EditorApplication.applicationContentsPath + "/Managed/UnityEditor.dll";
 
@@ -37,10 +36,9 @@ public class FSCompilerProcess {
 	
 	/// Compile the specified filename
 	/// @param filename F# source file
-	public void Compile (string filename) {
-		script = Path.GetFileNameWithoutExtension (filename);
-		string outfile = Path.Combine (outputDir, Path.ChangeExtension (script, "dll"));
-		string args = "-a " + filename + " -o " + outfile + " -r:" + unityEngineDllRef + 
+	public void Compile (string script, string inputFile, string outputFile) {
+		this.script = script;
+		string args = "-a " + inputFile + " -o " + outputFile + " -r:" + unityEngineDllRef + 
 				" -r:" + unityEditorDllRef + ' ' + FSCompilerOptions.compilerAditionalArgs;
 		startInfo.Arguments = args;
 		proc.Start ();
@@ -65,6 +63,6 @@ public class FSCompilerProcess {
 	
 	/// FSCompilerProcess' Message Log
 	void Log (string msg) {
-		win.Log ('[' + script + "] " + msg);
+		win.Log ("[FSC " + script + "] " + msg);
 	}
 }

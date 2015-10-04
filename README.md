@@ -26,7 +26,7 @@ Note: this has only been tested out on Linux (fsharpc command, which calls fsc.e
 1. Create a Unity Project
 2. Clone this repo in the root folder of your Unity Project
 3. Call the prepare.sh script, that'll create the 'Assets/Frameworks' and 'Assets/Editor' folder, and copy the needed files
-4. Put your F# source code in the 'Assets/Scripts' folder
+4. Put your F# source code (.fs file) in the 'Assets/Scripts' folder, edit it with your favorite text editor
 5. Open the F# Compiler Window (from the 'F#/Compiler' menu, or with Shift+Ctrl+3)
 6. Click the 'Compile F#s' button. Build errors are logged in the Editor's Console
 7. Wait until complete. Dlls will be put in the 'Assets/Frameworks' folder
