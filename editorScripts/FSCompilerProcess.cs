@@ -4,27 +4,28 @@ using System.IO;
 using System.Diagnostics;
 using System.Collections;
 
-/// <summary>
 /// F# Compiler for the Unity Engine, running external command `fsharpc` or `fsc.exe`
-/// </summary>
 public class FSCompilerProcess {
-	/// <summary>
-	/// Our process, which will compile F# stuff
-	/// </summary>
-	private Process proc = new Process ();
-	/// <summary>
-	/// The Process Start Info, with arguments, and stderr redirection
-	/// </summary>
-	private ProcessStartInfo startInfo = new ProcessStartInfo ("fsharpc");
-	
-	private string outputDir = Path.Combine ("Assets", "Frameworks");
-	private string unityEngineDllRef = Path.Combine (Path.Combine ("FSharp-Unity", "dlls"), "UnityEngine.dll");
-	private string script;
+	/// Paths
+	static string outputDir = "Assets/Frameworks";
+	static string unityEngineDllRef = UnityEditor.EditorApplication.applicationContentsPath + "/Managed/UnityEngine.dll";
+	static string unityEditorDllRef = UnityEditor.EditorApplication.applicationContentsPath + "/Managed/UnityEditor.dll";
 
-	/// <summary>
-	/// Initializes a new instance of the <see cref="FSCompilerProcess"/> class.
-	/// </summary>
-	public FSCompilerProcess () {
+	/// Our process, which will compile F# stuff
+	Process proc = new Process ();
+	/// The Process Start Info, with arguments, and stderr redirection
+	ProcessStartInfo startInfo = new ProcessStartInfo (FSCompilerOptions.compilerCommand);
+
+	/// The FSCompilerWindow, for logging
+	FSCompilerWindow win;
+	
+	/// The script which will be compiled, without the extension (for logging)
+	string script;
+	
+	/// Ctor
+	/// @param win The FSCompilerWindow, to log
+	public FSCompilerProcess (FSCompilerWindow win) {
+		this.win = win;
 		// please, let us know our errors
 		startInfo.RedirectStandardError = true;
 		startInfo.UseShellExecute = false;
@@ -33,44 +34,37 @@ public class FSCompilerProcess {
 		proc.EnableRaisingEvents = true;
 		proc.Exited += new EventHandler (WhenFSCExit);
 	}
-
-	/// <summary>
+	
 	/// Compile the specified filename
-	/// </summary>
-	/// <param name="filename">Filename: F# source code</param>
+	/// @param filename F# source file
 	public void Compile (string filename) {
 		script = Path.GetFileNameWithoutExtension (filename);
-		Log (script + " got");
 		string outfile = Path.Combine (outputDir, Path.ChangeExtension (script, "dll"));
-		string args = "-a " + filename + " -o " + outfile + " -r:" + unityEngineDllRef;
+		string args = "-a " + filename + " -o " + outfile + " -r:" + unityEngineDllRef + 
+				" -r:" + unityEditorDllRef + ' ' + FSCompilerOptions.compilerAditionalArgs;
 		startInfo.Arguments = args;
-		Log ("Running `fsharpc " + args + '`');
 		proc.Start ();
+		Log ("Running `" + FSCompilerOptions.compilerCommand + ' ' + args + '`');
 	}
-
-	/// <summary>
+	
 	/// Runs when fsc exits, informing us if there were errors
-	/// </summary>
 	private void WhenFSCExit (object sender, EventArgs e) {
 		if (proc.ExitCode == 0) {
-			Log (script + " finished");
+			Log ("Finished");
 		}
 		else {
 			LogError (script + proc.StandardError.ReadToEnd ());
 		}
 	}
-
-	/// <summary>
+	
 	/// FSCompilerProcess' Error Log
-	/// </summary>
-	private void LogError (string msg) {
-		UnityEngine.Debug.LogError ("[FSCompiler] " + msg);
+	void LogError (string msg) {
+		UnityEngine.Debug.LogError ('[' + script + "] " + msg);
+		Log ("Error! Check out the console");
 	}
-
-	/// <summary>
+	
 	/// FSCompilerProcess' Message Log
-	/// </summary>
-	private void Log (string msg) {
-		UnityEngine.Debug.Log ("[FSCompiler] " + msg);
+	void Log (string msg) {
+		win.Log ('[' + script + "] " + msg);
 	}
 }

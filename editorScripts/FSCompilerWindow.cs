@@ -2,30 +2,45 @@
 using UnityEditor;
 using System;
 using System.IO;
-using System.Collections;
 
 public class FSCompilerWindow : EditorWindow {
-	private static bool shouldRebuild = false;
+	string buildLog;
 
-	[MenuItem ("F#/Compile %3")]
+	[MenuItem ("F#/Compiler %#3")]
 	public static void ShowWindow () {
-		EditorWindow.GetWindow (typeof (FSstuff));
-		shouldRebuild = true;
+		EditorWindow.GetWindow (typeof (FSCompilerWindow), false, "F# Compiler");
 	}
 
 	void OnGUI () {
-		if (shouldRebuild) {
-			shouldRebuild = false;
-			try {
-				string[] fsharps = Directory.GetFiles (Path.Combine ("Assets", "Scripts"), "*.fs");
-				foreach (string file in fsharps) {
-					FSCompilerProcess proc = new FSCompilerProcess ();
-					proc.Compile (file);
-				}
-			}
-			catch (DirectoryNotFoundException ex) {
-				Debug.Log ("Falha ao procurar F#s: " + ex.Message);
+		GUILayout.BeginHorizontal ();
+		if (GUILayout.Button ("Compile F#s")) {
+			CompileFSs ();
+		}
+		if (GUILayout.Button ("Clear Build Log")) {
+			buildLog = "";
+			Repaint ();
+		}
+		GUILayout.EndHorizontal ();
+
+		GUILayout.Label (buildLog);
+	}
+
+
+	void CompileFSs () {
+		try {
+			string[] fsharps = Directory.GetFiles (Path.Combine ("Assets", "Scripts"), "*.fs");
+			foreach (string file in fsharps) {
+				Log ("Compiling " + Path.GetFileNameWithoutExtension (file));
+				FSCompilerProcess proc = new FSCompilerProcess (this);
+				proc.Compile (file);
 			}
 		}
+		catch (DirectoryNotFoundException ex) {
+			Log ("Falha ao procurar F#s: " + ex.Message);
+		}
+	}
+
+	public void Log (string msg) {
+		buildLog += msg + '\n';
 	}
 }
