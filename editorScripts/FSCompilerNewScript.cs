@@ -8,7 +8,9 @@ public class FSCompilerNewScript {
 	public static void NewFSScript () {
 		string path = EditorUtility.SaveFilePanelInProject ("New F# Script", "myFsScript", "fs", "oie");
 		string script = Path.GetFileNameWithoutExtension (path);
-		File.WriteAllText (path, "namespace " + script +
-				"\n\nopen UnityEngine\n\ntype " + script + " () =\n    inherit MonoBehaviour ()\n\n    member this.Start () = ()\n\n    member this.Update () = ()\n");
+		string[] strs = new string[] {"namespace " + script + '\n', "open UnityEngine\n",
+				"type " + script + " () =", "    inherit MonoBehaviour ()\n",
+				"    member this.Start () = ()\n", "    member this.Update () = ()"};
+		File.WriteAllLines (path, strs);
 	}
 }
