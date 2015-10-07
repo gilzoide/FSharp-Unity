@@ -6,6 +6,8 @@ using System.IO;
 public class FSCompilerWindow : EditorWindow {
 	/// The build log
 	string buildLog;
+	/// The scrolling Vector2
+	Vector2 scrollPosition;
 
 	[MenuItem ("F#/Compiler %#3")]
 	public static void ShowWindow () {
@@ -22,14 +24,17 @@ public class FSCompilerWindow : EditorWindow {
 			Repaint ();
 		}
 		GUILayout.EndHorizontal ();
+
+		scrollPosition = GUILayout.BeginScrollView (scrollPosition);
 		GUILayout.Label (buildLog);
+		GUILayout.EndScrollView ();
 	}
 
 
 	void CompileFSs () {
 		try {
 			// get all F# source files
-			string[] fsharps = Directory.GetFiles (Path.Combine ("Assets", "Scripts"), "*.fs");
+			string[] fsharps = Directory.GetFiles (FSCompilerOptions.inputDir, "*.fs");
 			foreach (string file in fsharps) {
 				string script = Path.GetFileNameWithoutExtension (file);
 				string outputFile = Path.ChangeExtension (Path.Combine (FSCompilerOptions.outputDir, script), "dll");
@@ -39,7 +44,7 @@ public class FSCompilerWindow : EditorWindow {
 					FSCompilerProcess proc = new FSCompilerProcess (this);
 					proc.Compile (script, file, outputFile);
 				}
-				else {
+				else if (FSCompilerOptions.outputUpToDate) {
 					Log (script + " is up to date");
 				}
 			}
