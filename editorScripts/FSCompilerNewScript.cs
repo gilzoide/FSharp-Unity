@@ -6,7 +6,7 @@ using System.IO;
 public class FSCompilerNewScript {
 	[MenuItem ("F#/New Script")]
 	public static void NewFSScript () {
-		string path = EditorUtility.SaveFilePanelInProject ("New F# Script", "myFsScript", "fs", "oie");
+		string path = EditorUtility.SaveFilePanel ("New F# Script", FSCompilerOptions.inputDir, "myFsScript", "fs");
 		string script = Path.GetFileNameWithoutExtension (path);
 		string[] strs = new string[] {"namespace " + script + '\n', "open UnityEngine\n",
 				"type " + script + " () =", "    inherit MonoBehaviour ()\n",
